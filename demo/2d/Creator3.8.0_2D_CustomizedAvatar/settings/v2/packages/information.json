@@ -1,0 +1,23 @@
+{
+  "__version__": "1.0.0",
+  "information": {
+    "customSplash": {
+      "id": "customSplash",
+      "label": "customSplash",
+      "enable": true,
+      "customSplash": {
+        "complete": false,
+        "form": "https://creator-api.cocos.com/api/form/show?sid=b52b0c48c040c9b915e32f37affb4c40"
+      }
+    },
+    "removeSplash": {
+      "id": "removeSplash",
+      "label": "removeSplash",
+      "enable": true,
+      "removeSplash": {
+        "complete": false,
+        "form": "https://creator-api.cocos.com/api/form/show?sid=b52b0c48c040c9b915e32f37affb4c40"
+      }
+    }
+  }
+}

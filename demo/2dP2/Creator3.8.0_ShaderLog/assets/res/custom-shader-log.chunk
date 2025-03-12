@@ -1,0 +1,246 @@
+// you can write GLSL code directly in here
+
+#include <builtin/uniforms/cc-global>
+#define iTime cc_time.x
+#define iTimeDelta cc_time.y
+#define iFrame cc_time.z
+// 数字最大位数
+#define MAX_DIGIT 2
+// 小数点后几位
+#define FLOAT_PRECISION 2
+
+/* global var */  
+// float  _LogVal = 0.; 
+vec2 iResolution;
+vec2 _CursorPos = vec2(0.);  vec2 _CurPos = vec2(0.);
+/* char sprite 各种字符的点阵数据  */ 
+vec4 ch_spc = vec4(0x000000,0x000000,0x000000,0x000000); 
+vec4 ch_exc = vec4(0x003078,0x787830,0x300030,0x300000); 
+vec4 ch_quo = vec4(0x006666,0x662400,0x000000,0x000000); 
+vec4 ch_hsh = vec4(0x006C6C,0xFE6C6C,0x6CFE6C,0x6C0000); 
+vec4 ch_dol = vec4(0x30307C,0xC0C078,0x0C0CF8,0x303000); 
+vec4 ch_pct = vec4(0x000000,0xC4CC18,0x3060CC,0x8C0000); 
+vec4 ch_amp = vec4(0x0070D8,0xD870FA,0xDECCDC,0x760000); 
+vec4 ch_apo = vec4(0x003030,0x306000,0x000000,0x000000); 
+vec4 ch_lbr = vec4(0x000C18,0x306060,0x603018,0x0C0000); 
+vec4 ch_rbr = vec4(0x006030,0x180C0C,0x0C1830,0x600000); 
+vec4 ch_ast = vec4(0x000000,0x663CFF,0x3C6600,0x000000); 
+vec4 ch_crs = vec4(0x000000,0x18187E,0x181800,0x000000); 
+vec4 ch_com = vec4(0x000000,0x000000,0x000038,0x386000); 
+vec4 ch_dsh = vec4(0x000000,0x0000FE,0x000000,0x000000); 
+vec4 ch_per = vec4(0x000000,0x000000,0x000038,0x380000); 
+vec4 ch_lsl = vec4(0x000002,0x060C18,0x3060C0,0x800000); 
+vec4 ch_0 = vec4(0x007CC6,0xD6D6D6,0xD6D6C6,0x7C0000); 
+vec4 ch_1 = vec4(0x001030,0xF03030,0x303030,0xFC0000); 
+vec4 ch_2 = vec4(0x0078CC,0xCC0C18,0x3060CC,0xFC0000); 
+vec4 ch_3 = vec4(0x0078CC,0x0C0C38,0x0C0CCC,0x780000); 
+vec4 ch_4 = vec4(0x000C1C,0x3C6CCC,0xFE0C0C,0x1E0000); 
+vec4 ch_5 = vec4(0x00FCC0,0xC0C0F8,0x0C0CCC,0x780000); 
+vec4 ch_6 = vec4(0x003860,0xC0C0F8,0xCCCCCC,0x780000); 
+vec4 ch_7 = vec4(0x00FEC6,0xC6060C,0x183030,0x300000); 
+vec4 ch_8 = vec4(0x0078CC,0xCCEC78,0xDCCCCC,0x780000); 
+vec4 ch_9 = vec4(0x0078CC,0xCCCC7C,0x181830,0x700000); 
+vec4 ch_col = vec4(0x000000,0x383800,0x003838,0x000000); 
+vec4 ch_scl = vec4(0x000000,0x383800,0x003838,0x183000); 
+vec4 ch_les = vec4(0x000C18,0x3060C0,0x603018,0x0C0000); 
+vec4 ch_equ = vec4(0x000000,0x007E00,0x7E0000,0x000000); 
+vec4 ch_grt = vec4(0x006030,0x180C06,0x0C1830,0x600000); 
+vec4 ch_que = vec4(0x0078CC,0x0C1830,0x300030,0x300000); 
+vec4 ch_ats = vec4(0x007CC6,0xC6DEDE,0xDEC0C0,0x7C0000); 
+vec4 ch_A = vec4(0x003078,0xCCCCCC,0xFCCCCC,0xCC0000); 
+vec4 ch_B = vec4(0x00FC66,0x66667C,0x666666,0xFC0000); 
+vec4 ch_C = vec4(0x003C66,0xC6C0C0,0xC0C666,0x3C0000); 
+vec4 ch_D = vec4(0x00F86C,0x666666,0x66666C,0xF80000); 
+vec4 ch_E = vec4(0x00FE62,0x60647C,0x646062,0xFE0000); 
+vec4 ch_F = vec4(0x00FE66,0x62647C,0x646060,0xF00000); 
+vec4 ch_G = vec4(0x003C66,0xC6C0C0,0xCEC666,0x3E0000); 
+vec4 ch_H = vec4(0x00CCCC,0xCCCCFC,0xCCCCCC,0xCC0000); 
+vec4 ch_I = vec4(0x007830,0x303030,0x303030,0x780000); 
+vec4 ch_J = vec4(0x001E0C,0x0C0C0C,0xCCCCCC,0x780000); 
+vec4 ch_K = vec4(0x00E666,0x6C6C78,0x6C6C66,0xE60000); 
+vec4 ch_L = vec4(0x00F060,0x606060,0x626666,0xFE0000); 
+vec4 ch_M = vec4(0x00C6EE,0xFEFED6,0xC6C6C6,0xC60000); 
+vec4 ch_N = vec4(0x00C6C6,0xE6F6FE,0xDECEC6,0xC60000); 
+vec4 ch_O = vec4(0x00386C,0xC6C6C6,0xC6C66C,0x380000); 
+vec4 ch_P = vec4(0x00FC66,0x66667C,0x606060,0xF00000); 
+vec4 ch_Q = vec4(0x00386C,0xC6C6C6,0xCEDE7C,0x0C1E00); 
+vec4 ch_R = vec4(0x00FC66,0x66667C,0x6C6666,0xE60000); 
+vec4 ch_S = vec4(0x0078CC,0xCCC070,0x18CCCC,0x780000); 
+vec4 ch_T = vec4(0x00FCB4,0x303030,0x303030,0x780000); 
+vec4 ch_U = vec4(0x00CCCC,0xCCCCCC,0xCCCCCC,0x780000); 
+vec4 ch_V = vec4(0x00CCCC,0xCCCCCC,0xCCCC78,0x300000); 
+vec4 ch_W = vec4(0x00C6C6,0xC6C6D6,0xD66C6C,0x6C0000); 
+vec4 ch_X = vec4(0x00CCCC,0xCC7830,0x78CCCC,0xCC0000); 
+vec4 ch_Y = vec4(0x00CCCC,0xCCCC78,0x303030,0x780000); 
+vec4 ch_Z = vec4(0x00FECE,0x981830,0x6062C6,0xFE0000); 
+vec4 ch_lsb = vec4(0x003C30,0x303030,0x303030,0x3C0000); 
+vec4 ch_rsl = vec4(0x000080,0xC06030,0x180C06,0x020000); 
+vec4 ch_rsb = vec4(0x003C0C,0x0C0C0C,0x0C0C0C,0x3C0000); 
+vec4 ch_pow = vec4(0x10386C,0xC60000,0x000000,0x000000); 
+vec4 ch_usc = vec4(0x000000,0x000000,0x000000,0x00FF00); 
+vec4 ch_a = vec4(0x000000,0x00780C,0x7CCCCC,0x760000); 
+vec4 ch_b = vec4(0x00E060,0x607C66,0x666666,0xDC0000); 
+vec4 ch_c = vec4(0x000000,0x0078CC,0xC0C0CC,0x780000); 
+vec4 ch_d = vec4(0x001C0C,0x0C7CCC,0xCCCCCC,0x760000); 
+vec4 ch_e = vec4(0x000000,0x0078CC,0xFCC0CC,0x780000); 
+vec4 ch_f = vec4(0x00386C,0x6060F8,0x606060,0xF00000); 
+vec4 ch_g = vec4(0x000000,0x0076CC,0xCCCC7C,0x0CCC78); 
+vec4 ch_h = vec4(0x00E060,0x606C76,0x666666,0xE60000); 
+vec4 ch_i = vec4(0x001818,0x007818,0x181818,0x7E0000); 
+vec4 ch_j = vec4(0x000C0C,0x003C0C,0x0C0C0C,0xCCCC78); 
+vec4 ch_k = vec4(0x00E060,0x60666C,0x786C66,0xE60000); 
+vec4 ch_l = vec4(0x007818,0x181818,0x181818,0x7E0000); 
+vec4 ch_m = vec4(0x000000,0x00FCD6,0xD6D6D6,0xC60000); 
+vec4 ch_n = vec4(0x000000,0x00F8CC,0xCCCCCC,0xCC0000); 
+vec4 ch_o = vec4(0x000000,0x0078CC,0xCCCCCC,0x780000); 
+vec4 ch_p = vec4(0x000000,0x00DC66,0x666666,0x7C60F0); 
+vec4 ch_q = vec4(0x000000,0x0076CC,0xCCCCCC,0x7C0C1E); 
+vec4 ch_r = vec4(0x000000,0x00EC6E,0x766060,0xF00000); 
+vec4 ch_s = vec4(0x000000,0x0078CC,0x6018CC,0x780000); 
+vec4 ch_t = vec4(0x000020,0x60FC60,0x60606C,0x380000); 
+vec4 ch_u = vec4(0x000000,0x00CCCC,0xCCCCCC,0x760000); 
+vec4 ch_v = vec4(0x000000,0x00CCCC,0xCCCC78,0x300000); 
+vec4 ch_w = vec4(0x000000,0x00C6C6,0xD6D66C,0x6C0000); 
+vec4 ch_x = vec4(0x000000,0x00C66C,0x38386C,0xC60000); 
+vec4 ch_y = vec4(0x000000,0x006666,0x66663C,0x0C18F0); 
+vec4 ch_z = vec4(0x000000,0x00FC8C,0x1860C4,0xFC0000); 
+vec4 ch_lpa = vec4(0x001C30,0x3060C0,0x603030,0x1C0000); 
+vec4 ch_bar = vec4(0x001818,0x181800,0x181818,0x180000); 
+vec4 ch_rpa = vec4(0x00E030,0x30180C,0x183030,0xE00000); 
+vec4 ch_tid = vec4(0x0073DA,0xCE0000,0x000000,0x000000); 
+vec4 ch_lar = vec4(0x000000,0x10386C,0xC6C6FE,0x000000);
+void setCursor(int x, int y)
+{
+    _CursorPos = vec2(float(x),iResolution.y-float(y));
+}
+
+float extract_bit(float n, float b)
+{    
+    b = clamp(b,-1.0,24.0);    
+    return floor(mod(floor(n / pow(2.0,floor(b))),2.0));  
+}
+
+float sprite(vec4 spr, vec2 size, vec2 _CurPos)
+{    
+    _CurPos = floor(_CurPos);
+    float bit = (size.x-_CurPos.x-1.0) + _CurPos.y * size.x;    
+    bool bounds = all(greaterThanEqual(_CurPos,vec2(0))) && all(lessThan(_CurPos,size));        
+    float pixels = 0.0;    pixels += extract_bit(spr.x, bit - 72.0);    
+    pixels += extract_bit(spr.y, bit - 48.0);    pixels += extract_bit(spr.z, bit - 24.0);    
+    pixels += extract_bit(spr.w, bit - 00.0);        
+    return bounds ? pixels : 0.0;}
+float char(vec4 ch)
+{    
+    float px = sprite(ch, vec2(8, 12), _CurPos - _CursorPos);    
+    _CursorPos.x += 8.;    
+    return px;
+}
+float backChar(vec4 ch)
+{
+    float px = sprite(ch, vec2(8, 12), _CurPos - _CursorPos); _CursorPos.x -= 8.; return px;
+}
+vec4 get_digit(float d)
+{    
+    d = floor(d);    
+    if(d == 0.0) return ch_0;    
+    if(d == 1.0) return ch_1;    
+    if(d == 2.0) return ch_2;    
+    if(d == 3.0) return ch_3;    
+    if(d == 4.0) return ch_4;    
+    if(d == 5.0) return ch_5;    
+    if(d == 6.0) return ch_6;    if(d == 7.0) return ch_7;    if(d == 8.0) return ch_8;    
+    if(d == 9.0) return ch_9;    return ch_0;}
+float print_float(float number)
+{   
+    float result = 0.0;       
+    if (number < 0.) {
+        result += char(ch_dsh);
+        number = -number;
+    }
+    _CursorPos.x += float(FLOAT_PRECISION + MAX_DIGIT + 1) * 8.;
+    for(int i = 0; i < FLOAT_PRECISION; i++) {
+        number *= 10.0;
+    }
+    for (int i = 0; i < FLOAT_PRECISION + MAX_DIGIT; i++) {
+        if (i == FLOAT_PRECISION) result += backChar(ch_per);
+        number = floor(number);
+        number /= 10.0;
+        float digit = fract(number) * 10.0;
+        result += backChar(get_digit(digit));
+    }
+    return result;
+}
+float print_int(float number){    
+    float result = 0.0;        
+    if (number < 0.) {
+        result += char(ch_dsh);
+        number = -number;
+    }
+    for(int i = MAX_DIGIT;i >= 0;i--)    {        
+        float digit = mod( number / pow(10.0, float(i)) , 10.0);        
+        if(abs(number) > pow(10.0, float(i)) || i == 0)        {            
+            result += char(get_digit(digit));        
+        }    
+    }       
+    return result;
+}
+// 封装到chunk后，shader里面调用这些宏会报错，找不到调用的函数，不知道为什么，只能先放弃宏
+// #define _a  _LogVal += char(ch_a);
+// #define _b  _LogVal += char(ch_b);
+// #define _c  _LogVal += char(ch_c);
+// #define _d  _LogVal += char(ch_d);
+// #define _e  _LogVal += char(ch_e);
+// #define _f  _LogVal += char(ch_f);
+// #define _g  _LogVal += char(ch_g);
+// #define _h  _LogVal += char(ch_h);
+// #define _i  _LogVal += char(ch_i);
+// #define _j  _LogVal += char(ch_j);
+// #define _k  _LogVal += char(ch_k);
+// #define _l  _LogVal += char(ch_l);
+// #define _m  _LogVal += char(ch_m);
+// #define _n  _LogVal += char(ch_n);
+// #define _o  _LogVal += char(ch_o);
+// #define _p  _LogVal += char(ch_p);
+// #define _q  _LogVal += char(ch_q);
+// #define _r  _LogVal += char(ch_r);
+// #define _s  _LogVal += char(ch_s);
+// #define _t  _LogVal += char(ch_t);
+// #define _u  _LogVal += char(ch_u);
+// #define _v  _LogVal += char(ch_v);
+// #define _w  _LogVal += char(ch_w);
+// #define _x  _LogVal += char(ch_x);
+// #define _y  _LogVal += char(ch_y);
+// #define _z  _LogVal += char(ch_z);
+// #define _A  _LogVal += char(ch_A);
+// #define _B  _LogVal += char(ch_B);
+// #define _C  _LogVal += char(ch_C);
+// #define _D  _LogVal += char(ch_D);
+// #define _E  _LogVal += char(ch_E);
+// #define _F  _LogVal += char(ch_F);
+// #define _G  _LogVal += char(ch_G);
+// #define _H  _LogVal += char(ch_H);
+// #define _I  _LogVal += char(ch_I);
+// #define _J  _LogVal += char(ch_J);
+// #define _K  _LogVal += char(ch_K);
+// #define _L  _LogVal += char(ch_L);
+// #define _M  _LogVal += char(ch_M);
+// #define _N  _LogVal += char(ch_N);
+// #define _O  _LogVal += char(ch_O);
+// #define _P  _LogVal += char(ch_P);
+// #define _Q  _LogVal += char(ch_Q);
+// #define _R  _LogVal += char(ch_R);
+// #define _S  _LogVal += char(ch_S);
+// #define _T  _LogVal += char(ch_T);
+// #define _U  _LogVal += char(ch_U);
+// #define _V  _LogVal += char(ch_V);
+// #define _W  _LogVal += char(ch_W);
+// #define _X  _LogVal += char(ch_X);
+// #define _Y  _LogVal += char(ch_Y);
+// #define _Z  _LogVal += char(ch_Z);
+// #define _spc  _LogVal += char(ch_spc);
+// #define _float(a)  _LogVal +=print_float(a);
+// #define _int(a)  _LogVal +=print_int(a);
+// #define _com _LogVal +=char(ch_com);
+// #define _slider(x,y,id,v) setCursor(x,y);print_slider(id,v);
+// #define _box(p,s,c) print_box(p,s,c);
+// #define _cursor(x,y)  setCursor(x,y);

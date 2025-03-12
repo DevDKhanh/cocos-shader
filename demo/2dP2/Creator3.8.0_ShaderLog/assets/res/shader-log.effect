@@ -1,0 +1,79 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: legacy/main-functions/general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      properties: &props
+  - name: transparent
+    passes:
+    - vert: general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <legacy/output>
+  #include <legacy/fog-fs>
+  #include <custom-shader-log>
+
+  in vec2 v_uv;
+  in vec3 v_position;
+
+  vec4 frag () {
+    vec4 col = vec4(0);
+    // 需要给iResolution赋值成图片的尺寸，这里临时写下，直接写死了
+    // 不一定要准确，只要比例能够清楚显示文字即可
+    iResolution = vec2(200, 100);
+    // 给_CurPos赋值
+    // 注意uv上下翻转处理
+    _CurPos = vec2(v_uv.x, 1.0 - v_uv.y) * iResolution;
+    // 设置光标位置
+    setCursor(10, 20);
+
+    float c = 0.;
+    c += char(ch_M);
+    c += char(ch_u);
+    c += char(ch_X);
+    c += char(ch_i);
+    c += char(ch_a);
+    c += char(ch_n);
+    c += char(ch_D);
+    c += char(ch_o);
+    c += char(ch_n);
+    c += char(ch_g);
+
+    setCursor(10,40);
+
+    // 打印字符
+    float t = 0.;
+    t += char(ch_G);
+    t += char(ch_a);
+    t += char(ch_m);
+    t += char(ch_e);
+    t += char(ch_spc);
+    t += char(ch_r);
+    t += char(ch_u);
+    t += char(ch_n);
+    t += char(ch_t);
+    t += char(ch_i);
+    t += char(ch_m);
+    t += char(ch_e);
+    t += char(ch_col);
+
+    // 打印浮点数，注意调整数字长度和小数点位数
+    t += print_float(cc_time.x);
+
+    return col + c + t;
+  }
+}%

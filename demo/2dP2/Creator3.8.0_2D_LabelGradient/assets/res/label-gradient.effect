@@ -1,0 +1,176 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+
+        amplitude: { value: 0.2 }
+        angularSpeed: { value: 3.0 }
+        moveSpeed: { value: 5.0 }
+        deltaY: { value: 0.0 }
+        beginColor: { value: [1, 0, 0, 1], editor: { type: color}}
+        endColor: { value: [0, 1, 0, 1], editor: { type: color}}
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  #include <builtin/uniforms/cc-global>
+
+  in vec4 color;
+
+  // #pragma define-meta DYNAMIC_MODE_COLOR options([1, 2, 3, 4, 5, 6])
+  #pragma define DYNAMIC_MODE_COLOR_FADING 0
+  #pragma define DYNAMIC_MODE_COLOR_REBOUND 1
+  #pragma define DYNAMIC_MODE_COLOR_TILT_REBOUND 2
+  #pragma define DYNAMIC_MODE_COLOR_FLASH_LIGHT 3
+  #pragma define DYNAMIC_MODE_COLOR_GRADIENT_FLASH_LIGHT 4
+  #pragma define DYNAMIC_MODE_COLOR_INTERLACING_FLASH_LIGHT 5
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+  #if USE_DYNAMIC
+    uniform mxd{
+      float amplitude;
+      float angularSpeed;
+      float moveSpeed;
+      float deltaY;
+    };
+  #endif
+
+  #if USE_COLOR
+    uniform mxd_color{
+      vec4 beginColor;
+      vec4 endColor;
+    };
+  #endif
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+    vec2 uv = uv0;
+    vec4 color1 = color;
+
+    #if USE_TEXTURE
+      #if USE_DYNAMIC
+        if (moveSpeed == 0.0) {
+          uv.y = uv.y + amplitude * sin(angularSpeed * 3.1415926 * uv.x) + deltaY;
+        } else {
+          uv.y = uv.y + amplitude * sin(angularSpeed * 3.1415926 * uv.x) * sin(moveSpeed * cc_time.x) + deltaY;
+        }
+      #endif
+
+      #if USE_COLOR
+        color1 = beginColor + (endColor - beginColor) * (uv.x + uv.y) / 2.0;
+      #endif
+
+      #if IS_HORIZONTAL
+        color1 = beginColor + (endColor - beginColor) * uv.x;
+      #endif
+
+      #if IS_VERTICAL
+        color1 = beginColor + (endColor - beginColor) * uv.y;
+      #endif
+
+      #if USE_COLOR_FADING
+        // 颜色消退
+        color1 = beginColor + (endColor - beginColor) * (uv.x + sin(cc_time.x));
+      #endif
+      #if USE_COLOR_REBOUND
+        // 颜色回弹
+        if (abs(abs(sin(cc_time.x)) - uv.x) < 0.1) {
+          color1 = endColor;
+        }
+      #endif
+      #if USE_COLOR_TILT_REBOUND
+        // 颜色斜回弹
+        if (abs(abs(sin(cc_time.x)) - (uv.x + uv.y) / 2.0) < 0.1) {
+          color1 = endColor;
+        }
+      #endif
+      #if USE_COLOR_GRADIENT_FLASH_LIGHT
+        // 渐变扫光效果
+        if (abs(tan(cc_time.x) - (uv.x + uv.y) / 2.0) < 0.05) {
+          color1 = endColor;
+        }
+      #endif
+      #if USE_COLOR_INTERLACING_FLASH_LIGHT
+        // 交错扫光效果
+        if (abs(sin(cc_time.x) - (uv.x + uv.y) / 2.0) < 0.05) {
+          color1 = endColor;
+        } else if(abs(sin(cc_time.x) - (1.0 - uv.x + uv.y) / 2.0) < 0.05) {
+          color1 = beginColor;
+        }
+      #endif
+
+      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv);
+      #if IS_GRAY
+        float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        o.r = o.g = o.b = gray;
+      #endif
+    #endif
+
+    o *= color1;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

@@ -1,0 +1,15 @@
+{
+  "layer": [
+    {
+      "name": "default",
+      "value": 1
+    }
+  ],
+  "__version__": "1.0.5",
+  "general": {
+    "designResolution": {
+      "width": 960,
+      "height": 640
+    }
+  }
+}
